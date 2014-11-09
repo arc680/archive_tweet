@@ -3,7 +3,7 @@
 
 require 'tweetstream'
 require 'yaml'
-require '~/crow_0096_bot/bot_tweet'
+require 'date'
 
 begin
     path = File.expand_path(File.dirname(__FILE__))
@@ -28,20 +28,23 @@ tc = Twitter::REST::Client.new do |config|
     config.oauth_token_secret = SETTINGS["OAUTH_TOKEN_SECRET"]
 end
 
-tweet_prefix = "( っ'ω'c)"
+client = TweetStream::Client.new
+client.userstream do |status|
+#    puts status.id
+#    puts status.user.screen_name
+    #    puts status.user.name
+    #    puts status.text
+    day = Date.today
 
-if ARGV.length == 0
-    bot_tweet = BotTweet.new
-    bot_tweet.create_tweet
-    #tweet = tweet_prefix + bot_tweet.get_tweet
-    tweet = bot_tweet.get_tweet
-else
-    tweet = tweet_prefix + ARGV[0];
+    today = day.strftime("%Y%m%d")
+    puts today
+
+    name = "#{status.user.screen_name}(#{status.user.name})"
+    tweet_url = "https://twitter.com/#{status.user.screen_name}/status/#{status.id}"
+    data = "#{name}: #{status.text}\n#{tweet_url}\n\n"
+    puts data
+    File.open("data_#{today}.txt", 'a') do |file|
+        file << data
+    end
+    #File.write("hoge.txt", data)
 end
-
-if tweet.length > 140
-    tweet = tweet[0..139]
-end
-
-puts tweet
-tc.update(tweet);
